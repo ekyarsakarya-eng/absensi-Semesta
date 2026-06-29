@@ -47,8 +47,8 @@ btnAndroid?.addEventListener('click', async () => {
 
 // IPHONE - paksa tampil
 if (isIOS &&!isInStandalone()) {
-  installPopup.classList.remove('hidden'); installPopup.classList.add('flex');
-  btnIOS.classList.remove('hidden');
+  installPopup?.classList.remove('hidden'); installPopup?.classList.add('flex');
+  btnIOS?.classList.remove('hidden');
   document.getElementById('installTitle').textContent = 'Wajib Install di iPhone';
   document.getElementById('installDesc').textContent = 'Safari tidak bisa absen normal kalau belum di Add to Home Screen';
 }
