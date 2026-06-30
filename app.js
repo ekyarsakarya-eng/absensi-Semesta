@@ -1,5 +1,5 @@
 const URL_GAS = 'https://script.google.com/macros/s/AKfycbx6zpzKhY-au2K2Dzxpp4JSpfhlh110Nu9WrlLVqhqDLnhZ9GFXXs-2OCEVrAKmoEdFWQ/exec';
-console.log('App.js loaded - v1 FIXED');
+console.log('App.js loaded - v2 OPTIMIZED');
 
 let user = JSON.parse(localStorage.getItem('user') || 'null');
 let isDark = localStorage.getItem('dark') === 'true';
@@ -23,7 +23,7 @@ const btnAndroid = document.getElementById('btnInstallAndroid');
 const btnIOS = document.getElementById('btnInstallIOS');
 const iosSteps = document.getElementById('iosSteps');
 
-const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) &&!window.MSStream;
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isInStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
 // ANDROID - pakai event asli
@@ -46,7 +46,7 @@ btnAndroid?.addEventListener('click', async () => {
 });
 
 // IPHONE - paksa tampil
-if (isIOS &&!isInStandalone()) {
+if (isIOS && !isInStandalone()) {
   installPopup?.classList.remove('hidden'); installPopup?.classList.add('flex');
   btnIOS?.classList.remove('hidden');
   document.getElementById('installTitle').textContent = 'Wajib Install di iPhone';
@@ -106,7 +106,7 @@ function renderLogin() {
 async function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
-  if (!username ||!password) return toast('Username & password wajib diisi');
+  if (!username || !password) return toast('Username & password wajib diisi');
   const btn = document.getElementById('btnLogin');
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Memproses...';
@@ -144,7 +144,7 @@ function togglePass() {
 }
 
 function toggleDark() {
-  isDark =!isDark;
+  isDark = !isDark;
   localStorage.setItem('dark', isDark);
   document.documentElement.classList.toggle('dark');
   document.getElementById('darkIcon').className = `fa-solid ${isDark? 'fa-sun' : 'fa-moon'} text-xl`;
@@ -366,8 +366,9 @@ function renderDashboard() {
     </div>
   </div>`;
 
+  // === OPTIMIZED: Panggil loadDashboard() untuk Home ===
   if (currentPage === 'home') {
-    cekStatus();
+    loadDashboard();
     dapatkanLokasiGPS();
   }
   if (currentPage === 'rekap') loadRekap();
@@ -415,7 +416,6 @@ function openCam() {
   const video = document.getElementById('video');
   const isSelfie = (currentCamMode === 'absen');
 
-  // iPhone fix: jangan mirror global
   video.style.transform = isSelfie? 'scaleX(-1)' : 'none';
   document.getElementById('canvas').style.transform = isSelfie? 'scaleX(-1)' : 'none';
 
@@ -432,7 +432,7 @@ function openCam() {
    .then(s => {
       stream = s;
       video.srcObject = s;
-      video.setAttribute('playsinline', true); // WAJIB untuk iPhone
+      video.setAttribute('playsinline', true);
       video.muted = true;
       video.onloadedmetadata = () => {
         video.play().catch(e => console.log('play error', e));
@@ -467,13 +467,12 @@ async function capture() {
   const canvas = document.getElementById('canvas');
   const btn = document.getElementById('btnCapture');
 
-  if (!video ||!canvas) return;
+  if (!video || !canvas) return;
 
   btn.disabled = true;
   btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Proses...';
 
   const ctx = canvas.getContext('2d');
-  // === FIX UTAMA: turunin ke 800px ===
   const MAX_WIDTH = 800;
   let width = video.videoWidth;
   let height = video.videoHeight;
@@ -487,7 +486,6 @@ async function capture() {
   canvas.height = height;
   ctx.drawImage(video, 0, 0, width, height);
 
-  // Timemark kecil biar enteng
   const scale = width / 640;
   ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
   ctx.fillRect(8 * scale, height - 85 * scale, 280 * scale, 75 * scale);
@@ -504,7 +502,6 @@ async function capture() {
   ctx.font = `9px Courier New`;
   ctx.fillText(`GPS: ${currentLocation.lat},${currentLocation.long}`, 18 * scale, height - 13 * scale);
 
-  // === KOMPRES JADI 120KB ===
   const fotoBase64 = canvas.toDataURL('image/jpeg', 0.75);
   closeCam();
 
@@ -517,7 +514,7 @@ async function capture() {
       long: currentLocation.long
     });
     toast(res.message);
-    if (res.status === 'success') cekStatus();
+    if (res.status === 'success') loadDashboard();
   } else if (currentCamMode === 'patroli') {
     document.getElementById('patroliFotoBase64').value = fotoBase64;
     document.getElementById('previewPatroli').innerHTML = `<img src="${fotoBase64}" class="w-full h-full object-cover">`;
@@ -646,19 +643,19 @@ function renderHome() {
 
 function getStatusText(jamMasuk, jamPulang) {
   if (jamMasuk === '--:--') return 'Belum Absen Masuk';
-  if (jamMasuk!== '--:--' && jamPulang === '--:--') return 'Sedang Bekerja';
+  if (jamMasuk !== '--:--' && jamPulang === '--:--') return 'Sedang Bekerja';
   return 'Shift Selesai 👍';
 }
 
 function updateJamRealtime() {
   const el = document.getElementById('jamRealtime');
   const statusEl = document.getElementById('statusKerja');
-  if (!el ||!statusServer) return;
+  if (!el || !statusServer) return;
 
   const now = new Date();
   el.textContent = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
-  if (statusServer.jamMasuk!== '--:--' && statusServer.jamPulang === '--:--') {
+  if (statusServer.jamMasuk !== '--:--' && statusServer.jamPulang === '--:--') {
     const [jam, menit] = statusServer.jamMasuk.split(':');
     const masuk = new Date();
     masuk.setHours(parseInt(jam), parseInt(menit), 0);
@@ -670,55 +667,66 @@ function updateJamRealtime() {
 }
 setInterval(updateJamRealtime, 1000);
 
-async function loadHomeStats() {
+// === [BARU] FUNGSI DASHBOARD GABUNGAN (SUPER CEPAT) ===
+async function loadDashboard() {
   try {
-    const [rekap, patroli] = await Promise.all([
-      api('getRekap', { username: user.username }),
-      api('getPatroli', { username: user.username })
-    ]);
+    const res = await api('getDashboard', { username: user.username });
+    if (res.status === 'success') {
+      statusServer = {
+        bisaIn: res.bisaIn,
+        bisaOut: res.bisaOut,
+        lock12Jam: res.lock12Jam,
+        sisaJam: res.sisaJam,
+        jamMasuk: res.jamMasuk,
+        jamPulang: res.jamPulang
+      };
+      
+      const contentArea = document.getElementById('contentArea');
+      if (contentArea && currentPage === 'home') {
+        contentArea.innerHTML = renderPage();
+        
+        const statHadir = document.getElementById('statHadir');
+        const statTelat = document.getElementById('statTelat');
+        const statPatroli = document.getElementById('statPatroli');
+        
+        if (statHadir) statHadir.textContent = res.totalHadir || 0;
+        if (statTelat) statTelat.textContent = res.totalTelat || 0;
+        if (statPatroli) statPatroli.textContent = res.totalPatroli || 0;
+        
+        const aktivitasEl = document.getElementById('aktivitasTerakhir');
+        if (aktivitasEl && res.patroliTerbaru && res.patroliTerbaru.length > 0) {
+          const last = res.patroliTerbaru[0];
+          const waktu = new Date(last.timestamp);
+          const selisih = Math.floor((new Date() - waktu) / 60000);
+          const waktuText = selisih < 60 ? `${selisih} menit lalu` : `${Math.floor(selisih/60)} jam lalu`;
 
-    const statHadir = document.getElementById('statHadir');
-    const statTelat = document.getElementById('statTelat');
-    const statPatroli = document.getElementById('statPatroli');
-
-    if (rekap.status === 'success' && statHadir) {
-      const hadir = rekap.data.filter(r => r.keterangan === 'IN' && r.jam && r.jam!== '--:--').length;
-      statHadir.textContent = hadir;
-      if(statTelat) statTelat.textContent = 0;
-    }
-
-    if (patroli.status === 'success' && statPatroli) {
-      statPatroli.textContent = patroli.data.length;
-
-      const aktivitasEl = document.getElementById('aktivitasTerakhir');
-      if (aktivitasEl && patroli.data.length > 0) {
-        const last = patroli.data[0];
-        const waktu = new Date(last.timestamp);
-        const selisih = Math.floor((new Date() - waktu) / 60000);
-        const waktuText = selisih < 60? `${selisih} menit lalu` : `${Math.floor(selisih/60)} jam lalu`;
-
-        aktivitasEl.innerHTML = `
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-xl flex items-center justify-center">
-              <i class="fa-solid fa-route"></i>
+          aktivitasEl.innerHTML = `
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 text-blue-600 rounded-xl flex items-center justify-center">
+                <i class="fa-solid fa-route"></i>
+              </div>
+              <div class="flex-1">
+                <p class="text-sm font-semibold text-gray-800 dark:text-white">Patroli ${last.lokasi}</p>
+                <p class="text-xs text-gray-500">${waktuText}</p>
+              </div>
             </div>
-            <div class="flex-1">
-              <p class="text-sm font-semibold text-gray-800 dark:text-white">Patroli ${last.lokasi}</p>
-              <p class="text-xs text-gray-500">${waktuText}</p>
-            </div>
-          </div>
-        `;
+          `;
+        } else if (aktivitasEl) {
+          aktivitasEl.innerHTML = '<p class="text-center text-gray-400 py-4 text-sm">Belum ada aktivitas</p>';
+        }
       }
+    } else {
+      toast(res.message);
     }
   } catch(e) {
-    console.error('Load stats error:', e);
+    console.error('Load dashboard error:', e);
   }
 }
 
 function updateGpsCard(jarak, radius) {
   const gpsText = document.getElementById('gpsText');
   const gpsCard = document.getElementById('gpsCard');
-  if (!gpsText ||!gpsCard) return;
+  if (!gpsText || !gpsCard) return;
 
   if (jarak <= radius) {
     gpsText.innerHTML = `<span class="text-green-600 dark:text-green-400 font-bold">Dalam radius ${Math.round(jarak)}m ✓</span>`;
@@ -781,7 +789,7 @@ async function loadRekap() {
 
       let hadir = 0;
       dataRekap.forEach(r => {
-        if (r.keterangan === 'IN' && r.jam && r.jam!== '--:--') hadir++;
+        if (r.keterangan === 'IN' && r.jam && r.jam !== '--:--') hadir++;
       });
 
       document.getElementById('totalHadir').textContent = hadir;
@@ -1040,7 +1048,7 @@ async function simpanKejadian() {
   const kronologi = document.getElementById('kejadianKronologi').value.trim();
   const fotoBase64 = document.getElementById('kejadianFotoBase64').value;
 
-  if (!jenis ||!lokasi ||!kronologi) {
+  if (!jenis || !lokasi || !kronologi) {
     toast('Jenis, Lokasi, dan Kronologi wajib diisi');
     btn.disabled = false;
     btn.innerHTML = 'Kirim Laporan';
@@ -1073,88 +1081,6 @@ async function simpanKejadian() {
 
   btn.disabled = false;
   btn.innerHTML = 'Kirim Laporan';
-}
-
-function openFormPembinaan() {
-  document.getElementById('modalPembinaan').classList.replace('hidden', 'flex');
-}
-
-function closeFormPembinaan() {
-  document.getElementById('modalPembinaan').classList.replace('flex', 'hidden');
-  document.getElementById('pembinaanMateri').value = '';
-  document.getElementById('pembinaanPelatih').value = '';
-  document.getElementById('pembinaanNilai').value = '';
-  document.getElementById('pembinaanKet').value = '';
-}
-
-async function simpanPembinaan() {
-  const btn = document.getElementById('btnSimpanPembinaan');
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Menyimpan...';
-
-  const materi = document.getElementById('pembinaanMateri').value.trim();
-  const pelatih = document.getElementById('pembinaanPelatih').value.trim();
-  const nilai = document.getElementById('pembinaanNilai').value;
-  const ket = document.getElementById('pembinaanKet').value.trim();
-
-  if (!materi ||!pelatih ||!nilai) {
-    toast('Materi, Pelatih, dan Nilai wajib diisi');
-    btn.disabled = false;
-    btn.innerHTML = 'Simpan';
-    return;
-  }
-
-  const res = await api('tambahPembinaan', {
-    username: user.username,
-    materi: materi,
-    pelatih: pelatih,
-    nilai: nilai,
-    keterangan: ket
-  });
-
-  if (res.status === 'success') {
-    toast(res.message);
-    closeFormPembinaan();
-    loadPembinaan();
-  } else {
-    toast(res.message);
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = 'Simpan';
-}
-
-async function loadPembinaan() {
-  const res = await api('getPembinaan', { username: user.username });
-  const listEl = document.getElementById('listPembinaan');
-
-  if (res.status === 'success' && res.data.length > 0) {
-    dataPembinaan = res.data;
-    listEl.innerHTML = dataPembinaan.map(p => {
-      const tgl = new Date(p.timestamp).toLocaleDateString('id-ID', {day: '2-digit', month: 'short'});
-      return `
-        <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-          <div class="flex justify-between items-start mb-2">
-            <div class="flex-1">
-              <p class="text-sm font-bold text-gray-800 dark:text-white">${p.materi}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">${tgl} - ${p.pelatih}</p>
-            </div>
-            <div class="bg-red-800 text-white px-3 py-1 rounded-full">
-              <p class="text-sm font-bold">${p.nilai}</p>
-            </div>
-          </div>
-          <p class="text-xs text-gray-600 dark:text-gray-300">${p.keterangan || '-'}</p>
-        </div>
-      `;
-    }).join('');
-  } else {
-    listEl.innerHTML = `
-      <div class="text-center text-gray-400 py-8">
-        <i class="fa-solid fa-user-graduate text-3xl mb-2"></i>
-        <p class="text-sm">Belum ada data pembinaan</p>
-      </div>
-    `;
-  }
 }
 
 function renderPembinaan() {
@@ -1233,7 +1159,7 @@ async function simpanPembinaan() {
   const nilai = document.getElementById('pembinaanNilai').value;
   const ket = document.getElementById('pembinaanKet').value.trim();
 
-  if (!materi ||!pelatih ||!nilai) {
+  if (!materi || !pelatih || !nilai) {
     toast('Materi, Pelatih, dan Nilai wajib diisi');
     btn.disabled = false;
     btn.innerHTML = 'Simpan';
@@ -1265,6 +1191,7 @@ function switchPage(page) {
   renderDashboard();
 }
 
+// === [OPTIMIZED] GPS DENGAN FALLBACK CACHE ===
 function dapatkanLokasiGPS() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -1285,13 +1212,35 @@ function dapatkanLokasiGPS() {
         if (gpsEl) gpsEl.innerText = `📍 ${currentLocation.alamat}`;
       },
       (error) => {
-        currentLocation.alamat = "GPS terkunci / tidak aktif";
-        const lokasiEl = document.getElementById('lokasiStatus');
-        if (lokasiEl) lokasiEl.textContent = 'GPS off';
+        // FALLBACK: Gunakan lokasi terakhir dari cache
+        const lastGps = JSON.parse(localStorage.getItem('gps') || 'null');
+        if (lastGps && lastGps.lat) {
+          currentLocation = lastGps;
+          currentLocation.alamat = `Lat: ${currentLocation.lat}, Long: ${currentLocation.long} (cache)`;
+          const lokasiEl = document.getElementById('lokasiStatus');
+          if (lokasiEl) lokasiEl.textContent = 'Lokasi terakhir (GPS lambat)';
+          toast('GPS lambat, pakai lokasi terakhir');
+          
+          // Tetap cek jarak dengan lokasi cache
+          api('getSetting', {}).then(setting => {
+            if (setting.lat) {
+              const jarak = hitungJarak(currentLocation.lat, currentLocation.long, setting.lat, setting.long);
+              updateGpsCard(jarak, setting.radius);
+            }
+          });
+        } else {
+          currentLocation.alamat = "GPS terkunci / tidak aktif";
+          const lokasiEl = document.getElementById('lokasiStatus');
+          if (lokasiEl) lokasiEl.textContent = 'GPS off';
+        }
         const gpsEl = document.getElementById('previewGps');
         if (gpsEl) gpsEl.innerText = `⚠ ${currentLocation.alamat}`;
       },
-      { enableHighAccuracy: true, timeout: 20000 }
+      { 
+        enableHighAccuracy: true, 
+        timeout: 8000,        // Turunkan dari 20s ke 8s
+        maximumAge: 60000     // Cache 1 menit
+      }
     );
   } else {
     currentLocation.alamat = "Browser tidak mendukung GPS";
@@ -1323,7 +1272,7 @@ function startTimemark() {
     }
 
     const modalCam = document.getElementById('modalCam');
-    if (modalCam &&!modalCam.classList.contains('hidden')) {
+    if (modalCam && !modalCam.classList.contains('hidden')) {
       animationFrame = requestAnimationFrame(update);
     }
   }
@@ -1342,7 +1291,6 @@ async function uploadFotoProfil(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  // Kompres dulu
   const img = await createImageBitmap(file);
   const max = 600;
   const scale = Math.min(1, max / Math.max(img.width, img.height));
@@ -1413,15 +1361,22 @@ async function gantiPassword() {
   btn.innerHTML = 'Update';
 }
 
+// === [OPTIMIZED] CEK STATUS PAKAI getDashboard ===
 async function cekStatus() {
   try {
-    const res = await api('cekStatus', { username: user.username });
+    const res = await api('getDashboard', { username: user.username });
     if (res.status === 'success') {
-      statusServer = res;
+      statusServer = {
+        bisaIn: res.bisaIn,
+        bisaOut: res.bisaOut,
+        lock12Jam: res.lock12Jam,
+        sisaJam: res.sisaJam,
+        jamMasuk: res.jamMasuk,
+        jamPulang: res.jamPulang
+      };
       const contentArea = document.getElementById('contentArea');
       if (contentArea && currentPage === 'home') {
         contentArea.innerHTML = renderPage();
-        loadHomeStats();
       }
     } else {
       toast(res.message);
@@ -1444,19 +1399,17 @@ async function api(action, data = {}) {
   }
 }
 
-console.log('Starting app...');
+console.log('Starting app v2...');
 
-// === HANDLE BACK BUTTON HP - LANGSUNG HOME ===
+// === HANDLE BACK BUTTON HP ===
 window.addEventListener('popstate', function(event) {
   if (currentPage !== 'home') {
     currentPage = 'home';
     renderDashboard();
   }
-  // Push state lagi biar back ga langsung keluar
   history.pushState({ page: 'home' }, '', '');
 });
 
-// Set initial state
 history.pushState({ page: currentPage }, '', '');
 
 const originalSwitchPage = switchPage;
@@ -1465,6 +1418,5 @@ switchPage = function(page) {
   history.pushState({ page: page }, '', '');
 }
 
-console.log('Starting app...');
+console.log('Starting app v2...');
 render();
-render(); 
