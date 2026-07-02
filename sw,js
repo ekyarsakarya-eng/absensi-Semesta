@@ -1,4 +1,4 @@
-const CACHE_NAME = 'absensi-smst-v7';
+const CACHE_NAME = 'absensi-smst-v8';
 const urlsToCache = [
   '/absensi-Semesta/',
   '/absensi-Semesta/app.js',
