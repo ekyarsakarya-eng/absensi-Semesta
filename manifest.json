@@ -1,21 +1,20 @@
 {
   "name": "Absensi Karyawan Semesta",
   "short_name": "Absensi SMST",
-  "start_url": "/absensi-Semesta/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#800000",
   "theme_color": "#800000",
-  "scope": "/absensi-Semesta/",
-  "id": "/absensi-Semesta/",
+  "scope": "./",
   "icons": [
     {
-      "src": "/absensi-Semesta/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/absensi-Semesta/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
