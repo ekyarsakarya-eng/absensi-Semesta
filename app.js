@@ -110,7 +110,7 @@ function renderLogin() {
     <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md">
       <div class="text-center mb-6">
         <div class="w-20 h-20 mx-auto mb-3">
-  <img src="./logo-512.png" alt="Logo" class="w-full h-full object-contain">
+  <img src="./icon-512.png" alt="Logo" class="w-full h-full object-contain">
 </div>
         <h1 class="text-2xl font-bold text-red-800 dark:text-white">Absensi Karyawan</h1>
         <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">Silakan login untuk absen</p>
